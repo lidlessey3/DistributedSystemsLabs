@@ -1,0 +1,25 @@
+FROM golang:1.21 as builder
+
+ARG program
+
+WORKDIR /app
+
+COPY ./src ./src
+
+WORKDIR /app/src/
+
+RUN go mod download
+
+WORKDIR /app/src/mrapps
+RUN go build -buildmode=plugin $program.go
+
+WORKDIR /app/src/main
+RUN go build -o worker mrworker.go 
+
+RUN mkdir data
+
+WORKDIR /app/src/main/data
+
+ENV program=$program
+
+ENTRYPOINT ../worker ../../mrapps/$(echo $program).so

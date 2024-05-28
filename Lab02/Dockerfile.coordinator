@@ -1,0 +1,22 @@
+FROM golang:1.21 as builder
+
+WORKDIR /app
+
+COPY ./src ./src
+
+WORKDIR /app/src
+
+RUN go mod download
+
+WORKDIR /app/src/main
+
+RUN go build -o coordinator mrcoordinator.go 
+
+RUN mkdir data
+
+WORKDIR /app/src/main/data
+
+ENTRYPOINT ["../coordinator"]
+
+
+

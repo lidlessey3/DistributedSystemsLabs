@@ -1,0 +1,37 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: Go
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+    runs-on: leo
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build_HTTP
+      working-directory: ./http_server
+      run: go build -v ./...
+    - name: Build_Proxy
+      working-directory: ./proxy
+      run: go build -v ./...
+    - name: remove_http_docker_container
+      run: (doas docker stop http_container || true) && (doas docker image rm -f http_server || true) && (doas docker rm -f http_container || true)
+    - name: remover_proxy_container
+      run: (doas docker stop proxy_container || true) && (doas docker rm -f proxy_container || true) && (doas docker image rm -f proxy || true)
+    - name: build_http_container
+      working-directory: ./http_server
+      run: doas docker build --platform linux/arm64 ./ -t http_server
+    - name: build_proxy_container
+      working-directory: ./proxy
+      run: doas docker build --platform linux/arm64 ./ -t proxy
+    - name: run_http_container
+      run: doas docker run -d --restart unless-stopped --network distributed-vlan --ip 10.128.128.2 --name http_container http_server 80
+    - name: run_proxy_container
+      run: doas docker run -d --restart unless-stopped --network distributed-vlan --ip 10.128.128.3 --name proxy_container proxy 1080

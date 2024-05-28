@@ -1,0 +1,25 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: proxy
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+    runs-on: proxy
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: remove_http_docker_container
+      run: (sudo docker stop proxy_container || true) && (sudo docker image rm -f proxy || true) && (sudo docker rm -f proxy_container || true)
+    - name: build_http_container
+      working-directory: ./proxy
+      run: sudo docker build --platform linux/arm64 ./ -t proxy
+    - name: run_http_container
+      run: sudo docker run -d --restart unless-stopped -p 1080:8000 --name proxy_container proxy

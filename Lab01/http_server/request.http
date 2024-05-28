@@ -1,0 +1,20 @@
+#REST Client file to test the server
+GET http://localhost:8080/cat.txt HTTP/1.1
+Host: localhost 
+###
+POST http://localhost:8080/ciao.txt HTTP/1.1
+Content-Type: text/plain 
+
+Bonjour a tout le monde
+Wow I even managed to write it right XD
+###
+POST http://localhost:8080/ciao.html HTTP/1.1
+Content-Type: text/html
+
+<h1>HOLA</h1>
+###
+POST http://localhost:8080/test/../keyboard.css HTTP/1.1
+Content-Type: text/css
+
+<h1>QWERTY <<< AZERTY</h1>
+###
